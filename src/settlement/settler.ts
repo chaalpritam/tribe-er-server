@@ -94,7 +94,7 @@ async function settleBatch(): Promise<void> {
       // 4. Mark as settled
       await db.query(
         `UPDATE pending_operations
-         SET status = 'settled', settled_at = NOW(), tx_signature = $1
+         SET status = 'settled', settled_at = NOW(), tx_signature = $1, error = NULL
          WHERE id = ANY($2::bigint[])`,
         [txSignature, batch.opIds]
       );
