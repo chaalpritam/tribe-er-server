@@ -59,14 +59,17 @@ async function settleBatch(): Promise<void> {
   console.log(`Settling ${ops.length} pending operations...`);
 
   const wallet = getServerWallet();
-  const batches = buildInstructionBatches(ops, wallet.publicKey);
+  const batches = await buildInstructionBatches(ops, wallet.publicKey, connection);
 
   for (const batch of batches) {
-    // 2. Mark as settling
-    await db.query(
-      `UPDATE pending_operations SET status = 'settling' WHERE id = ANY($1::bigint[])`,
-      [batch.opIds]
-    );
+    // Skip marking for profile-init batches (no opIds)
+    if (batch.opIds.length > 0) {
+      // 2. Mark as settling
+      await db.query(
+        `UPDATE pending_operations SET status = 'settling' WHERE id = ANY($1::bigint[])`,
+        [batch.opIds]
+      );
+    }
 
     try {
       // 3. Build and send transaction
@@ -83,8 +86,10 @@ async function settleBatch(): Promise<void> {
       );
 
       console.log(
-        `Settlement tx confirmed: ${txSignature} (${batch.opIds.length} ops)`
+        `Settlement tx confirmed: ${txSignature} (${batch.opIds.length} ops, ${batch.instructions.length} ixs)`
       );
+
+      if (batch.opIds.length === 0) continue; // Profile init batch, no ops to update
 
       // 4. Mark as settled
       await db.query(
@@ -119,6 +124,7 @@ async function settleBatch(): Promise<void> {
       console.error(`Settlement failed for batch:`, errorMsg);
 
       // 5. Mark as failed, retry if under limit
+      if (batch.opIds.length === 0) continue;
       await db.query(
         `UPDATE pending_operations
          SET status = CASE

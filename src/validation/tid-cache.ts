@@ -78,7 +78,7 @@ class TidCache {
       writeU64LE(tidBuffer, 0, tidNum);
 
       const [pda] = PublicKey.findProgramAddressSync(
-        [Buffer.from("tid_record"), tidBuffer],
+        [Buffer.from("tid"), tidBuffer],
         new PublicKey(config.programIds.tidRegistry)
       );
 
