@@ -1,0 +1,14 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: tribe
+      POSTGRES_PASSWORD: tribe
+      POSTGRES_DB: tribe_er
+    ports:
+      - "5435:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./src/storage/migrations:/docker-entrypoint-initdb.d
+volumes:
+  pgdata:
