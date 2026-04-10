@@ -52,7 +52,16 @@ async function handleOperation(
     return { error: "Custody pubkey does not match TID record", statusCode: 403 };
   }
 
-  // 4. Check for duplicate pending operation
+  // 4. Check for signature replay (same signature seen before)
+  const replayCheck = await db.query(
+    `SELECT id FROM pending_operations WHERE signature = $1`,
+    [body.signature]
+  );
+  if (replayCheck.rows.length > 0) {
+    return { error: "Signature already used (replay)", statusCode: 409 };
+  }
+
+  // 5. Check for duplicate pending operation (same action still pending)
   const dupCheck = await db.query(
     `SELECT id FROM pending_operations
      WHERE op_type = $1 AND follower_tid = $2 AND following_tid = $3 AND status = 'pending'`,
