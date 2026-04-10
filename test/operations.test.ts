@@ -117,6 +117,8 @@ describe("POST /v1/follow", () => {
     const body = createSignedBody("follow", "1", "2", testKeyPair);
 
     mockVerifyCustody.mockResolvedValueOnce(true);
+    // replayCheck: no replay
+    mockQuery.mockResolvedValueOnce({ rows: [] });
     // dupCheck: no duplicates
     mockQuery.mockResolvedValueOnce({ rows: [] });
     // insert into pending_operations
@@ -196,6 +198,8 @@ describe("POST /v1/unfollow", () => {
     const body = createSignedBody("unfollow", "1", "2", testKeyPair);
 
     mockVerifyCustody.mockResolvedValueOnce(true);
+    // replayCheck: no replay
+    mockQuery.mockResolvedValueOnce({ rows: [] });
     // dupCheck: no duplicates
     mockQuery.mockResolvedValueOnce({ rows: [] });
     // insert into pending_operations
