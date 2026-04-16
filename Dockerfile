@@ -11,5 +11,8 @@ COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/src/storage/migrations ./dist/storage/migrations
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/package.json ./
+COPY docker-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 EXPOSE 3003
+ENTRYPOINT ["docker-entrypoint.sh"]
 CMD ["node", "dist/index.js"]
