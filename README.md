@@ -17,12 +17,15 @@ Ephemeral Rollup sequencer for the Tribe protocol. Provides instant follow/unfol
 3. User sees "Following" immediately
 
 4. Settlement loop (every 10s)
-   Query pending operations
+   Query up to MAX_BATCH_SIZE pending operations (default 50)
    Auto-init missing social profiles on-chain
-   Batch follow_delegated/unfollow_delegated instructions (up to 4 per tx)
+   Pack follow_delegated / unfollow_delegated instructions
+     into Solana transactions (~4 instructions per tx)
    Sign with server wallet, send to Solana
    Mark settled with tx_signature
 ```
+
+A single settlement cycle drains up to `MAX_BATCH_SIZE` operations, splitting them across as many transactions as needed (Solana's per-tx size cap is what bounds the ~4 ix-per-tx figure, not the batch as a whole).
 
 ## API Endpoints
 
@@ -32,7 +35,7 @@ Ephemeral Rollup sequencer for the Tribe protocol. Provides instant follow/unfol
 | POST | `/v1/unfollow` | Submit unfollow (signed by custody wallet) |
 | GET | `/v1/link/:followerTid/:followingTid` | Check follow status (includes pending) |
 | GET | `/v1/profile/:tid` | Social profile (includes pending counts) |
-| GET | `/health` | Server health + pending ops count |
+| GET | `/health` | Server health, server wallet pubkey, SOL balance, and pending ops count |
 
 ## Trust Model
 
@@ -40,6 +43,14 @@ Ephemeral Rollup sequencer for the Tribe protocol. Provides instant follow/unfol
 - `follow_delegated` / `unfollow_delegated` instructions verify the authority before accepting operations
 - Users can always bypass the ER server and call `follow()` directly on Solana L1
 - The ER server is a convenience layer, not a gatekeeper
+
+### Replay & freshness
+
+Every accepted request is gated on:
+
+- **Signature uniqueness** -- `pending_operations` rejects duplicate ed25519 signatures, blocking replays
+- **Timestamp window** -- the signed payload includes a Unix timestamp; requests outside a 60-second window are rejected
+- **Optimistic local state** -- `er_links` and `er_profiles` are updated immediately on accept (status: `pending_follow` / `pending_unfollow`) so reads see the new edge before L1 settlement; on settlement, unfollows delete the row outright
 
 ## Project Structure
 
@@ -86,8 +97,10 @@ pnpm dev                # http://localhost:3003
 | `SOLANA_RPC_URL` | devnet | Solana JSON-RPC |
 | `SERVER_WALLET_PATH` | `./server-wallet.json` | Sequencer keypair |
 | `SETTLEMENT_INTERVAL_MS` | `10000` | Settlement loop interval |
-| `MAX_BATCH_SIZE` | `50` | Max operations per settlement cycle |
+| `MAX_BATCH_SIZE` | `50` | Max operations per settlement cycle (split across ~4-ix transactions) |
 | `MAX_RETRIES` | `3` | Retry failed settlements before marking failed |
+| `SOCIAL_GRAPH_PROGRAM_ID` | (devnet default) | Override `social-graph` program ID |
+| `TID_REGISTRY_PROGRAM_ID` | (devnet default) | Override `tid-registry` program ID |
 
 ## Multi-Node
 
