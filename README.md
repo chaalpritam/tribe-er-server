@@ -88,6 +88,8 @@ pnpm install
 pnpm dev                # http://localhost:3003
 ```
 
+The server binds to `0.0.0.0:3003`, so other devices on the same Wi-Fi reach it as `http://<hostname>.local:3003`. Run `tribe share` from the parent repo for the exact URL — it shows the ER server URL alongside the hub URL so you can plug both into a remote frontend or native app. See the [main README](../Readme.md#cross-device-development-on-one-wi-fi) for the full flow.
+
 ## Environment Variables
 
 | Variable | Default | Description |
