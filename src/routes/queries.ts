@@ -90,6 +90,38 @@ export async function queryRoutes(server: FastifyInstance) {
     }
   );
 
+  // Net delta of in-flight (pending or settling) operations for this
+  // TID. Excludes 'settled' to avoid double-counting once the hub's
+  // indexer picks up the on-chain row, and excludes 'failed' since
+  // those never landed on L1. Hub adds these to social_graph counts
+  // so a hard-reload during the ~10s settlement window still shows
+  // the right Following / Followers numbers.
+  server.get<{ Params: { tid: string } }>(
+    "/pending-deltas/:tid",
+    async (request) => {
+      const { tid } = request.params;
+      const result = await db.query(
+        `SELECT
+           COUNT(*) FILTER (WHERE op_type = 'follow'   AND follower_tid  = $1)
+             - COUNT(*) FILTER (WHERE op_type = 'unfollow' AND follower_tid  = $1)
+             AS following_delta,
+           COUNT(*) FILTER (WHERE op_type = 'follow'   AND following_tid = $1)
+             - COUNT(*) FILTER (WHERE op_type = 'unfollow' AND following_tid = $1)
+             AS followers_delta
+         FROM pending_operations
+         WHERE status IN ('pending', 'settling')
+           AND (follower_tid = $1 OR following_tid = $1)`,
+        [tid]
+      );
+      const row = result.rows[0] ?? {};
+      return {
+        tid: parseInt(tid, 10),
+        followingDelta: Number(row.following_delta ?? 0),
+        followersDelta: Number(row.followers_delta ?? 0),
+      };
+    }
+  );
+
   server.get<{ Params: { tid: string } }>(
     "/profile/:tid",
     async (request) => {
