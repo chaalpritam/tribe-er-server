@@ -122,6 +122,76 @@ export async function queryRoutes(server: FastifyInstance) {
     }
   );
 
+  // The list-based variant the hub actually uses to merge with its
+  // own social_graph. Returns the four sets the hub needs to compute
+  // an accurate Following / Followers count without dipping during
+  // the indexer-lag window:
+  //
+  //   followingTids   – tids this user currently follows per ER
+  //                     (pending_follow OR settled rows in er_links).
+  //   followerTids    – tids that currently follow this user per ER.
+  //   unfollowingTids – tids the user has hit unfollow on, but the
+  //                     unfollow hasn't fully propagated to the hub's
+  //                     social_graph yet. Comes from er_links rows
+  //                     still at 'pending_unfollow' AND from recent
+  //                     'settled' unfollow ops (5-minute grace —
+  //                     after that we let the count snap back if
+  //                     the hub indexer is genuinely stuck).
+  //   unfollowerTids  – the inverse for incoming unfollows.
+  //
+  // Hub merges:
+  //   (social_graph ∪ followingTids) \ unfollowingTids
+  // and counts the set, so deduplication is exact.
+  server.get<{ Params: { tid: string } }>(
+    "/er-links/:tid",
+    async (request) => {
+      const { tid } = request.params;
+      const linksResult = await db.query(
+        `SELECT follower_tid, following_tid, status FROM er_links
+         WHERE follower_tid = $1 OR following_tid = $1`,
+        [tid]
+      );
+      const recentUnfollowsResult = await db.query(
+        `SELECT follower_tid, following_tid FROM pending_operations
+         WHERE op_type = 'unfollow' AND status = 'settled'
+           AND settled_at > NOW() - INTERVAL '5 minutes'
+           AND (follower_tid = $1 OR following_tid = $1)`,
+        [tid]
+      );
+
+      const followingTids = new Set<string>();
+      const followerTids = new Set<string>();
+      const unfollowingTids = new Set<string>();
+      const unfollowerTids = new Set<string>();
+
+      for (const row of linksResult.rows) {
+        const followerStr = String(row.follower_tid);
+        const followingStr = String(row.following_tid);
+        if (row.status === "pending_unfollow") {
+          if (followerStr === tid) unfollowingTids.add(followingStr);
+          if (followingStr === tid) unfollowerTids.add(followerStr);
+        } else {
+          if (followerStr === tid) followingTids.add(followingStr);
+          if (followingStr === tid) followerTids.add(followerStr);
+        }
+      }
+      for (const row of recentUnfollowsResult.rows) {
+        const followerStr = String(row.follower_tid);
+        const followingStr = String(row.following_tid);
+        if (followerStr === tid) unfollowingTids.add(followingStr);
+        if (followingStr === tid) unfollowerTids.add(followerStr);
+      }
+
+      return {
+        tid: parseInt(tid, 10),
+        followingTids: [...followingTids],
+        followerTids: [...followerTids],
+        unfollowingTids: [...unfollowingTids],
+        unfollowerTids: [...unfollowerTids],
+      };
+    }
+  );
+
   server.get<{ Params: { tid: string } }>(
     "/profile/:tid",
     async (request) => {
