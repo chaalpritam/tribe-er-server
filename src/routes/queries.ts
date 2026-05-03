@@ -192,6 +192,29 @@ export async function queryRoutes(server: FastifyInstance) {
     }
   );
 
+  // List every follow / unfollow op this TID has touched — as the
+  // follower (their own actions) or the followed (incoming follows).
+  // Powers the hub's per-account activity feed: each row carries the
+  // settlement state and, once on-chain, the Solana tx_signature so
+  // the UI can deep-link to a block-explorer for verification.
+  server.get<{
+    Params: { tid: string };
+    Querystring: { limit?: string };
+  }>("/v1/operations/:tid", async (request) => {
+    const { tid } = request.params;
+    const limit = Math.min(parseInt(request.query.limit || "100", 10), 500);
+    const result = await db.query(
+      `SELECT id, op_type, follower_tid, following_tid, status,
+              created_at, settled_at, tx_signature, error
+       FROM pending_operations
+       WHERE follower_tid = $1 OR following_tid = $1
+       ORDER BY COALESCE(settled_at, created_at) DESC
+       LIMIT $2`,
+      [tid, limit],
+    );
+    return { operations: result.rows };
+  });
+
   server.get<{ Params: { tid: string } }>(
     "/profile/:tid",
     async (request) => {
