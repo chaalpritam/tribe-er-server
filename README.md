@@ -110,6 +110,17 @@ In a multi-node setup, each machine runs its own ER server with its own PostgreS
 
 The frontend's failover layer automatically routes requests to the healthy ER server.
 
+## Related Repos
+
+| Repo | Description |
+|------|-------------|
+| [tribe-protocol](../tribe-protocol) | Solana programs (Anchor) — social-graph with ER delegation |
+| [tribe-sdk](../tribe-sdk) | TypeScript SDK — EphemeralRollupProvider |
+| [tribe-hub](../tribe-hub) | Decentralized hub — message storage, indexing, gossip |
+| [tribe-app](../tribe-app) | Next.js frontend reference client |
+| [tribeapp.wtf](../tribeapp.wtf) | Consumer-facing web app |
+| [tribe-ios](../tribe-ios) | Native SwiftUI iOS client |
+
 ## License
 
 MIT
