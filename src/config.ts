@@ -13,6 +13,15 @@ export const config = {
   ),
   maxBatchSize: parseInt(process.env.MAX_BATCH_SIZE || "50", 10),
   maxRetries: parseInt(process.env.MAX_RETRIES || "3", 10),
+  hubUrl: process.env.HUB_URL || "http://localhost:4000",
+  reactionFlushIntervalMs: parseInt(
+    process.env.REACTION_FLUSH_INTERVAL_MS || "5000",
+    10
+  ),
+  reactionFlushBatchSize: parseInt(
+    process.env.REACTION_FLUSH_BATCH_SIZE || "100",
+    10
+  ),
   programIds: {
     socialGraph:
       process.env.SOCIAL_GRAPH_PROGRAM_ID ||
