@@ -114,13 +114,16 @@ The frontend's failover layer automatically routes requests to the healthy ER se
 
 | Repo | Description |
 |------|-------------|
-| [tribe-protocol](../tribe-protocol) | Solana programs (Anchor) — social-graph with ER delegation |
-| [tribe-sdk](../tribe-sdk) | TypeScript SDK — EphemeralRollupProvider |
-| [tribe-hub](../tribe-hub) | Decentralized hub — message storage, indexing, gossip |
-| [tribe-app](../tribe-app) | Next.js frontend reference client |
-| [tribeapp.wtf](../tribeapp.wtf) | Consumer-facing web app |
-| [tribe-ios](../tribe-ios) | Native SwiftUI iOS client |
-
+| [tribe-protocol](../tribe-protocol) | Solana programs (Anchor) — 12 programs: tid-registry, app-key-registry, username-registry, social-graph w/ ER delegation, hub-registry, tip-registry, crowdfund-registry, task-registry, channel-registry, karma-registry, poll-registry, event-registry |
+| [tribe-sdk](../tribe-sdk) | TypeScript SDK — DirectSolana and EphemeralRollup providers; clients for identity, tweets, DMs, profiles, channels, bookmarks, polls, events, tasks, crowdfunds, tips, search |
+| [tribe-hub](../tribe-hub) | Decentralized hub — signed-message storage + Solana indexer + gossip peer sync; REST + WebSocket APIs |
+| [tribe-er-server](../tribe-er-server) | Ephemeral Rollup sequencer — instant follows, batched L1 settlement every 10s |
+| [tribe-app](../tribe-app) | Next.js frontend — protocol-first reference client with multi-node failover |
+| [tribeapp.wtf](../tribeapp.wtf) | Consumer-facing web app + landing page at tribeapp.wtf — hyperlocal social built entirely on the protocol |
+| [tribe-ios](../tribe-ios) | Native SwiftUI iOS client (Twitter-shaped) — full read/write against hub + ER, NaCl-box DMs, BLAKE3 + ed25519 signing via Apple CryptoKit |
+| [tribe-insta](../tribe-insta) | Native SwiftUI iOS client (Instagram-shaped) — photo grid, stories, reels; same hub + envelope format as tribe-ios. Scaffolding stage — see `tribe-insta/PLAN.md` |
+| [tribe-core-swift](../tribe-core-swift) | Shared Swift package consumed by tribe-ios + tribe-insta — crypto (BLAKE3, NaCl box, ed25519 signing, BIP39, SolanaHD), backup file format, envelope signer. See `tribe-core-swift/MIGRATION.md` |
+| [homebrew-tap](../homebrew-tap) | Homebrew formulas: `brew install tribe` (hub + ER) and `brew install tribe-app` (demo UI) |
 ## License
 
 MIT
