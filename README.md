@@ -114,16 +114,18 @@ The frontend's failover layer automatically routes requests to the healthy ER se
 
 | Repo | Description |
 |------|-------------|
-| [tribe-protocol](../tribe-protocol) | Solana programs (Anchor) — 12 programs: tid-registry, app-key-registry, username-registry, social-graph w/ ER delegation, hub-registry, tip-registry, crowdfund-registry, task-registry, channel-registry, karma-registry, poll-registry, event-registry |
-| [tribe-sdk](../tribe-sdk) | TypeScript SDK — DirectSolana and EphemeralRollup providers; clients for identity, tweets, DMs, profiles, channels, bookmarks, polls, events, tasks, crowdfunds, tips, search |
-| [tribe-hub](../tribe-hub) | Decentralized hub — signed-message storage + Solana indexer + gossip peer sync; REST + WebSocket APIs |
-| [tribe-er-server](../tribe-er-server) | Ephemeral Rollup sequencer — instant follows, batched L1 settlement every 10s |
-| [tribe-twitter-app](../tribe-twitter-app) | Next.js frontend — protocol-first reference client with multi-node failover |
-| [tribeapp.wtf](../tribeapp.wtf) | Consumer-facing web app + landing page at tribeapp.wtf — hyperlocal social built entirely on the protocol |
-| [tribe-twitter](../tribe-twitter) | Native SwiftUI iOS client (Twitter-shaped) — full read/write against hub + ER, NaCl-box DMs, BLAKE3 + ed25519 signing via Apple CryptoKit |
-| [tribe-insta](../tribe-insta) | Native SwiftUI iOS client (Instagram-shaped) — photo grid, stories, reels; same hub + envelope format as tribe-twitter. Scaffolding stage — see `tribe-insta/PLAN.md` |
-| [tribe-core-swift](../tribe-core-swift) | Shared Swift package consumed by tribe-twitter + tribe-insta — crypto (BLAKE3, NaCl box, ed25519 signing, BIP39, SolanaHD), backup file format, envelope signer. See `tribe-core-swift/MIGRATION.md` |
-| [homebrew-tap](../homebrew-tap) | Homebrew formulas: `brew install tribe` (hub + ER) and `brew install tribe-twitter-app` (demo UI) |
+| [TribeEco](https://github.com/chaalpritam/TribeEco) | Monorepo — protocol stack, clients, deploy tooling |
+| [tribe-protocol](../tribe-protocol) | Solana programs (Anchor) — identity, social graph, registries |
+| [tribe-sdk](../tribe-sdk) | TypeScript SDK — DirectSolana and EphemeralRollup providers |
+| [tribe-hub](../tribe-hub) | Decentralized hub — message storage, Solana indexer, gossip sync |
+| [tribe-er-server](../tribe-er-server) | Ephemeral Rollup sequencer — instant follows, L1 settlement |
+| [tribe](../tribe) | Native SwiftUI hyperlocal iOS app (`app.tribe.app`) — city/channel feeds, explore, map, tribes |
+| [tribe-twitter](../tribe-twitter) | Native SwiftUI Twitter-shaped iOS app (`app.tribe.twitter`) |
+| [tribe-insta](../tribe-insta) | Native SwiftUI Instagram-shaped iOS app — photos, stories, reels |
+| [tribe-twitter-app](../tribe-twitter-app) | Next.js reference web client |
+| [tribeapp.wtf](../tribeapp.wtf) | Consumer hyperlocal web app + landing page |
+| [tribe-core-swift](../tribe-core-swift) | Shared Swift package — crypto, hub API, models (see `MIGRATION.md`) |
+| [homebrew-tap](../homebrew-tap) | Homebrew formulas — `brew install tribe`, `brew install tribe-twitter-app` |
 ## License
 
 MIT
